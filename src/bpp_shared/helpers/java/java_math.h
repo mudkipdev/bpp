@@ -78,65 +78,41 @@ namespace Java {
 	 * @brief Casts a double to a 64-bit integer
 	 */
 inline int64_t DoubleToInt64(double value) {
+	if (value >= -9223372036854775808.0 && value < 9223372036854775808.0)
+		return int64_t(value);
 	if (std::isnan(value))
 		return 0;
-	if (value > double(INT64_MAX))
-		return INT64_MAX;
-	if (value < double(INT64_MIN))
-		return INT64_MIN;
-	if (value > 0)
-		return int64_t(std::floor(value));
-	if (value < 0)
-		return int64_t(std::ceil(value));
-	return 0;
+	return value > 0 ? INT64_MAX : INT64_MIN;
 }
 /**
 	 * @brief Casts a double to a 32-bit integer
 	 */
 inline int32_t DoubleToInt32(double value) {
+	if (value >= -2147483648.0 && value <= 2147483647.0)
+		return int32_t(value);
 	if (std::isnan(value))
 		return 0;
-	if (value > double(INT32_MAX))
-		return INT32_MAX;
-	if (value < double(INT32_MIN))
-		return INT32_MIN;
-	if (value > 0)
-		return int32_t(std::floor(value));
-	if (value < 0)
-		return int32_t(std::ceil(value));
-	return 0;
+	return value > 0 ? INT32_MAX : INT32_MIN;
 }
 /**
 	 * @brief Casts a float to a 64-bit integer
 	 */
 inline int64_t FloatToInt64(float value) {
+	if (value >= -9223372036854775808.0f && value < 9223372036854775808.0f)
+		return int64_t(value);
 	if (std::isnan(value))
 		return 0;
-	if (value > float(INT64_MAX))
-		return INT64_MAX;
-	if (value < float(INT64_MIN))
-		return INT64_MIN;
-	if (value > 0)
-		return int64_t(std::floor(value));
-	if (value < 0)
-		return int64_t(std::ceil(value));
-	return 0;
+	return value > 0 ? INT64_MAX : INT64_MIN;
 }
 /**
 	 * @brief Casts a float to a 32-bit integer
 	 */
 inline int32_t FloatToInt32(float value) {
+	if (value >= -2147483648.0f && value < 2147483648.0f)
+		return int32_t(value);
 	if (std::isnan(value))
 		return 0;
-	if (value > float(INT32_MAX))
-		return INT32_MAX;
-	if (value < float(INT32_MIN))
-		return INT32_MIN;
-	if (value > 0)
-		return int32_t(std::floor(value));
-	if (value < 0)
-		return int32_t(std::ceil(value));
-	return 0;
+	return value > 0 ? INT32_MAX : INT32_MIN;
 }
 }; // namespace Java
 
