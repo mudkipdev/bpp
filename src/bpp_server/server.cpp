@@ -7,6 +7,7 @@
  *
 */
 
+#include "generator/generator.h"
 #include "logger.h"
 #include "packet/packet_utils.h"
 #include "world.h"
@@ -134,6 +135,7 @@ void Server::loadConfig() {
 		    { "level-seed", std::to_string(std::mt19937(std::random_device()())()) },
 		    //{"spawn-animals",true}
 		    { "server-port", "25565" },
+		    { "fast-generation", "false" },
 		    //{"allow-nether",true},
 		    //{"spawn-monsters","true"},
 		    //{"max-players", "-1"},
@@ -144,6 +146,7 @@ void Server::loadConfig() {
 	}
 	//chunkDistance = config.GetAsNumber<int32_t>("view-distance");
 	serverPort = config.GetAsNumber<int32_t>("server-port");
+	Generator::fastGeneration = config.GetAsBoolean("fast-generation");
 	//motd = config.GetAsString("motd");
 	//maximumPlayers = config.GetAsNumber<int32_t>("max-players");
 	//maximumThreads = config.GetAsNumber<int32_t>("max-generator-threads");

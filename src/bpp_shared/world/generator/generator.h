@@ -11,7 +11,7 @@
 
 /**
  * @brief The base generator class
- * 
+ *
  */
 class Generator {
 protected:
@@ -19,6 +19,12 @@ protected:
 	int64_t m_seed = 0;
 
 public:
+	/**
+	 * @brief Trades a sub-block amount of terrain accuracy for roughly twice the
+	 *        generation speed. Must be set before any generator is constructed.
+	 */
+	inline static bool fastGeneration = false;
+
 	Generator(int64_t seed);
 	Generator() = default;
 	virtual ~Generator() = default;

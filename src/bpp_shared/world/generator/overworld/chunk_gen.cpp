@@ -32,8 +32,9 @@ static void FillCell(Chunk& chunk, Int3 samplePos, BlockType blockType) {
 OverworldGenerator::OverworldGenerator(int64_t p_seed) : Generator(p_seed), m_biomeGen(p_seed) {
 	m_rand = Java::Random(m_seed);
 	// Init Terrain Noise
-	m_lowNoiseGen = NoiseOctavesPerlin(m_rand, 16, EFFECTIVE_TERRAIN_OCTAVES);
-	m_highNoiseGen = NoiseOctavesPerlin(m_rand, 16, EFFECTIVE_TERRAIN_OCTAVES);
+	int32_t effectiveOctaves = fastGeneration ? EFFECTIVE_TERRAIN_OCTAVES : 0;
+	m_lowNoiseGen = NoiseOctavesPerlin(m_rand, 16, effectiveOctaves);
+	m_highNoiseGen = NoiseOctavesPerlin(m_rand, 16, effectiveOctaves);
 	m_selectorNoiseGen = NoiseOctavesPerlin(m_rand, 8);
 	m_sandGravelNoiseGen = NoiseOctavesPerlin(m_rand, 4);
 	m_stoneNoiseGen = NoiseOctavesPerlin(m_rand, 4);
