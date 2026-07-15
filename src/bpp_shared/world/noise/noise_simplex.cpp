@@ -6,7 +6,15 @@
 */
 
 #include "noise_simplex.h"
+#include <array>
 #include <cassert>
+
+static constexpr std::array<uint8_t, 256> MOD12 = [] {
+	std::array<uint8_t, 256> table{};
+	for (size_t i = 0; i < table.size(); ++i)
+		table[i] = uint8_t(i % 12);
+	return table;
+}();
 
 NoiseSimplex::NoiseSimplex() {
 	Java::Random rand;
@@ -34,7 +42,7 @@ void NoiseSimplex::InitPermTable(Java::Random& rand) {
 }
 
 void NoiseSimplex::GenerateNoise(std::vector<double>& values, Vec2 p_offset, Int32_2 p_size, Vec2 p_scale,
-                                 double amplitude) {
+                                 double amplitude, bool overwrite) {
 	size_t index = 0;
 
 	for (int32_t xI = 0; xI < p_size.x; ++xI) {
@@ -66,9 +74,9 @@ void NoiseSimplex::GenerateNoise(std::vector<double>& values, Vec2 p_offset, Int
 			double y1c = y0b - 1.0 + 2.0 * unskewing;
 			int32_t xInt = x0 & 255;
 			int32_t yInt = y0 & 255;
-			int32_t grad0 = permutations[xInt + permutations[yInt]] % 12;
-			int32_t grad1 = permutations[xInt + i + permutations[yInt + j]] % 12;
-			int32_t grad2 = permutations[xInt + 1 + permutations[yInt + 1]] % 12;
+			int32_t grad0 = MOD12[size_t(permutations[xInt + permutations[yInt]])];
+			int32_t grad1 = MOD12[size_t(permutations[xInt + i + permutations[yInt + j]])];
+			int32_t grad2 = MOD12[size_t(permutations[xInt + 1 + permutations[yInt + 1]])];
 			double term0 = 0.5 - x0b * x0b - y0b * y0b;
 			double contrib0;
 			if (term0 < 0.0) {
@@ -96,7 +104,10 @@ void NoiseSimplex::GenerateNoise(std::vector<double>& values, Vec2 p_offset, Int
 				contrib2 = term2 * term2 * dotProd(gradients[grad2], x1c, y1c);
 			}
 
-			values[index++] += 70.0 * (contrib0 + contrib1 + contrib2) * amplitude;
+			if (overwrite)
+				values[index++] = 70.0 * (contrib0 + contrib1 + contrib2) * amplitude;
+			else
+				values[index++] += 70.0 * (contrib0 + contrib1 + contrib2) * amplitude;
 		}
 	}
 }

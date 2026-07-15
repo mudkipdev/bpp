@@ -53,17 +53,20 @@ inline void NoiseOctavesSimplex::GenerateOctaves(std::vector<double>& noiseField
                                                  double lacunarity, double persistence) {
 	scale.x /= 1.5;
 	scale.y /= 1.5;
-	if (!noiseField.empty() && int32_t(noiseField.size()) >= size.x * size.y) {
+	if (int32_t(noiseField.size()) < size.x * size.y)
+		noiseField.resize(size_t(size.x * size.y), 0.0);
+
+	if (octaves <= 0) {
 		for (size_t i = 0; i < noiseField.size(); ++i)
 			noiseField[i] = 0.0;
-	} else {
-		noiseField.resize(size_t(size.x * size.y), 0.0);
+		return;
 	}
 
 	double frequency = 1.0;
 	double amplitude = 1.0;
 	for (size_t octave = 0; octave < size_t(octaves); ++octave) {
-		generator_collection[octave].GenerateNoise(noiseField, offset, size, scale * amplitude, 0.55 / frequency);
+		generator_collection[octave].GenerateNoise(noiseField, offset, size, scale * amplitude, 0.55 / frequency,
+		                                           octave == 0);
 		amplitude *= lacunarity;
 		frequency *= persistence;
 	}
