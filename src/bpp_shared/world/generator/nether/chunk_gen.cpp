@@ -7,6 +7,24 @@
 
 #include "chunk_gen.h"
 #include "chunk.h"
+#include <algorithm>
+
+static constexpr int32_t EFFECTIVE_TERRAIN_OCTAVES = 8;
+static constexpr double DENSITY_EPSILON = 1.0e-9;
+
+/**
+ * @brief Fills one 4x8x4 terrain interpolation cell with a single block type
+ *
+ * @param chunk The chunk to fill the cell in
+ * @param samplePos The x,y,z coordinate of the cell within the noise sample grid
+ * @param blockType The block to fill the cell with
+ */
+static void FillCell(Chunk& chunk, Int3 samplePos, BlockType blockType) {
+	for (int32_t subY = 0; subY < 8; ++subY)
+		for (int32_t subX = 0; subX < 4; ++subX)
+			for (int32_t subZ = 0; subZ < 4; ++subZ)
+				chunk.setBlock({ samplePos.x * 4 + subX, samplePos.y * 8 + subY, samplePos.z * 4 + subZ }, blockType);
+}
 
 /**
  * @brief Construct a new Beta 1.7.3 Nether Generator
@@ -18,8 +36,8 @@ NetherGenerator::NetherGenerator(int64_t p_seed) : Generator(p_seed), m_caver(tr
 	// Tell caver it's a nether caver
 	m_rand = Java::Random(m_seed);
 	// Init Terrain Noise
-	m_lowNoiseGen = NoiseOctavesPerlin(m_rand, 16);
-	m_highNoiseGen = NoiseOctavesPerlin(m_rand, 16);
+	m_lowNoiseGen = NoiseOctavesPerlin(m_rand, 16, EFFECTIVE_TERRAIN_OCTAVES);
+	m_highNoiseGen = NoiseOctavesPerlin(m_rand, 16, EFFECTIVE_TERRAIN_OCTAVES);
 	m_selectorNoiseGen = NoiseOctavesPerlin(m_rand, 8);
 	m_sandGravelNoiseGen = NoiseOctavesPerlin(m_rand, 4);
 	m_stoneNoiseGen = NoiseOctavesPerlin(m_rand, 4);
@@ -151,6 +169,12 @@ void NetherGenerator::ReplaceBlocksForBiome(Chunk& chunk) {
 /**
  * @brief Generate the Terrain, minus any caves, as just stone
  *
+ * Interpolation cells whose eight corners all sit on the same side of the
+ * density threshold are filled directly, since trilinear interpolation can
+ * never leave the range spanned by the corners. DENSITY_EPSILON covers the
+ * worst-case rounding error of the incremental interpolation, keeping the
+ * output bit-identical to the unshortened loop.
+ *
  * @param chunkPos The x,z coordinate of the chunk
  * @param c The chunk that should get its terrain generated
  */
@@ -175,22 +199,37 @@ void NetherGenerator::GenerateTerrain(Chunk& chunk) {
 				    m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 0) * max.y + sampleY + 0)];
 				double corner110 =
 				    m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 1) * max.y + sampleY + 0)];
-				double corner001 =
-				    (m_terrainNoiseField[size_t(((sampleX + 0) * max.z + sampleZ + 0) * max.y + sampleY + 1)] -
-				     corner000) *
-				    verticalLerpStep;
-				double corner011 =
-				    (m_terrainNoiseField[size_t(((sampleX + 0) * max.z + sampleZ + 1) * max.y + sampleY + 1)] -
-				     corner010) *
-				    verticalLerpStep;
-				double corner101 =
-				    (m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 0) * max.y + sampleY + 1)] -
-				     corner100) *
-				    verticalLerpStep;
-				double corner111 =
-				    (m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 1) * max.y + sampleY + 1)] -
-				     corner110) *
-				    verticalLerpStep;
+				double upper000 =
+				    m_terrainNoiseField[size_t(((sampleX + 0) * max.z + sampleZ + 0) * max.y + sampleY + 1)];
+				double upper010 =
+				    m_terrainNoiseField[size_t(((sampleX + 0) * max.z + sampleZ + 1) * max.y + sampleY + 1)];
+				double upper100 =
+				    m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 0) * max.y + sampleY + 1)];
+				double upper110 =
+				    m_terrainNoiseField[size_t(((sampleX + 1) * max.z + sampleZ + 1) * max.y + sampleY + 1)];
+
+				double minDensity = std::min(
+				    { corner000, corner010, corner100, corner110, upper000, upper010, upper100, upper110 });
+				double maxDensity = std::max(
+				    { corner000, corner010, corner100, corner110, upper000, upper010, upper100, upper110 });
+				int32_t cellBottom = sampleY * 8;
+				if (minDensity > DENSITY_EPSILON) {
+					FillCell(chunk, { sampleX, sampleY, sampleZ }, BLOCK_NETHERRACK);
+					continue;
+				}
+				if (maxDensity < -DENSITY_EPSILON) {
+					if (cellBottom >= NETHER_LAVA_LEVEL)
+						continue;
+					if (cellBottom + 8 <= NETHER_LAVA_LEVEL) {
+						FillCell(chunk, { sampleX, sampleY, sampleZ }, BLOCK_LAVA_STILL);
+						continue;
+					}
+				}
+
+				double corner001 = (upper000 - corner000) * verticalLerpStep;
+				double corner011 = (upper010 - corner010) * verticalLerpStep;
+				double corner101 = (upper100 - corner100) * verticalLerpStep;
+				double corner111 = (upper110 - corner110) * verticalLerpStep;
 
 				// Interpolate the 1/4th scale noise
 				for (int32_t subY = 0; subY < 8; ++subY) {

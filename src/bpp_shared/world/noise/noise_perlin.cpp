@@ -112,8 +112,11 @@ double NoisePerlin::GenerateNoise(Vec3 coord) {
  * @param size The size of the volume that'll be saved the noise field
  * @param scale The scale of the perlin noise equation
  * @param amplitude The amplitude multiplier of the perlin noise function
+ * @param overwrite Whether the noise field should be overwritten instead of accumulated into,
+ *                  which lets the first octave of a set skip zero-filling the field
  */
-void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, Int3 size, Vec3 scale, double amplitude) {
+void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, Int3 size, Vec3 scale, double amplitude,
+                                bool overwrite) {
 	if (size.y == 1) {
 		size_t index = 0;
 		double invAmp = 1.0 / amplitude;
@@ -147,7 +150,10 @@ void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, In
 				                 grad3d(permutations[ba + 1], fx - 1.0, 0.0, fz - 1.0));
 
 				double result = lerp(w, x1, x2);
-				noiseField[index++] += result * invAmp;
+				if (overwrite)
+					noiseField[index++] = result * invAmp;
+				else
+					noiseField[index++] += result * invAmp;
 			}
 		}
 	} else {
@@ -212,7 +218,10 @@ void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, In
 					double i2 = lerp(v, lerpAY, lerpBY);
 					double result = lerp(w, i1, i2);
 
-					noiseField[index++] += result * invAmp;
+					if (overwrite)
+						noiseField[index++] = result * invAmp;
+					else
+						noiseField[index++] += result * invAmp;
 				}
 			}
 		}

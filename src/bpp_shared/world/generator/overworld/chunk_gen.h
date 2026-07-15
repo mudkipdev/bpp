@@ -9,6 +9,7 @@
 #include "../noise/noise_octaves_perlin.h"
 #include "../shared/cave_gen.h"
 #include "../shared/feature_gen.h"
+#include "biome_gen.h"
 #include "biomes.h"
 
 /**
@@ -26,6 +27,8 @@ private:
 	NoiseOctavesPerlin m_continentalnessNoiseGen;
 	NoiseOctavesPerlin m_depthNoiseGen;
 	NoiseOctavesPerlin m_treeDensityNoiseGen;
+
+	BiomeGenerator m_biomeGen;
 
 	// Stored noise Fields
 	std::vector<double> m_terrainNoiseField;

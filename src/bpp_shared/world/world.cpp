@@ -635,10 +635,10 @@ void WorldManager::populateReady() {
 		wrapper.m_centerChunkPos = pos;
 		wrapper.getChunkRegion();
 		if (isHell) {
-			NetherGenerator tl_gen(this->seed);
+			thread_local NetherGenerator tl_gen(this->seed);
 			tl_gen.PopulateChunk(*cit->second, wrapper);
 		} else {
-			OverworldGenerator tl_gen(this->seed);
+			thread_local OverworldGenerator tl_gen(this->seed);
 			tl_gen.PopulateChunk(*cit->second, wrapper);
 		}
 		auto& chunk = cit->second;
