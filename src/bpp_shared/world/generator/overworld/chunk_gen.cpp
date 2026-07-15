@@ -15,10 +15,6 @@ static constexpr double DENSITY_EPSILON = 1.0e-9;
 
 /**
  * @brief Fills one 4x8x4 terrain interpolation cell with a single block type
- *
- * @param chunk The chunk to fill the cell in
- * @param samplePos The x,y,z coordinate of the cell within the noise sample grid
- * @param blockType The block to fill the cell with
  */
 static void FillCell(Chunk& chunk, Int3 samplePos, BlockType blockType) {
 	for (int32_t subY = 0; subY < 8; ++subY)
@@ -184,12 +180,6 @@ void OverworldGenerator::ReplaceBlocksForBiome(Chunk& chunk) {
 
 /**
  * @brief Generate the Terrain, minus any caves, as just stone
- *
- * Interpolation cells whose eight corners all sit on the same side of the
- * density threshold are filled directly, since trilinear interpolation can
- * never leave the range spanned by the corners. DENSITY_EPSILON covers the
- * worst-case rounding error of the incremental interpolation, keeping the
- * output bit-identical to the unshortened loop.
  *
  * @param chunkPos The x,z coordinate of the chunk
  * @param c The chunk that should get its terrain generated
