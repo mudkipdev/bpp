@@ -112,14 +112,29 @@ double NoisePerlin::GenerateNoise(Vec3 coord) {
  * @param size The size of the volume that'll be saved the noise field
  * @param scale The scale of the perlin noise equation
  * @param amplitude The amplitude multiplier of the perlin noise function
- * @param overwrite Whether the noise field should be overwritten instead of accumulated into,
- *                  which lets the first octave of a set skip zero-filling the field
+ * @param overwrite Whether the noise field should be overwritten instead of accumulated into
  */
 void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, Int3 size, Vec3 scale, double amplitude,
                                 bool overwrite) {
 	if (size.y == 1) {
 		size_t index = 0;
 		double invAmp = 1.0 / amplitude;
+
+		static thread_local std::vector<double> zFrac, zFade;
+		static thread_local std::vector<int32_t> zPerm;
+		zFrac.resize(size_t(size.z));
+		zFade.resize(size_t(size.z));
+		zPerm.resize(size_t(size.z));
+		for (int32_t z = 0; z < size.z; ++z) {
+			double fz = (offset.z + z) * scale.z + coordinate.z;
+			int32_t iz = Java::DoubleToInt32(fz);
+			if (fz < iz)
+				--iz;
+			zPerm[size_t(z)] = iz & 255;
+			fz -= iz;
+			zFrac[size_t(z)] = fz;
+			zFade[size_t(z)] = fade(fz);
+		}
 
 		for (int32_t x = 0; x < size.x; ++x) {
 			double fx = (offset.x + x) * scale.x + coordinate.x;
@@ -131,13 +146,9 @@ void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, In
 			double u = fade(fx);
 
 			for (int32_t z = 0; z < size.z; ++z) {
-				double fz = (offset.z + z) * scale.z + coordinate.z;
-				int32_t iz = Java::DoubleToInt32(fz);
-				if (fz < iz)
-					--iz;
-				int32_t pz = iz & 255;
-				fz -= iz;
-				double w = fade(fz);
+				double fz = zFrac[size_t(z)];
+				int32_t pz = zPerm[size_t(z)];
+				double w = zFade[size_t(z)];
 
 				int32_t a = permutations[px] + 0;
 				int32_t aa = permutations[a] + pz;
@@ -164,6 +175,22 @@ void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, In
 		double lerpAX = 0.0, lerpBX = 0.0;
 		double lerpAY = 0.0, lerpBY = 0.0;
 
+		static thread_local std::vector<double> yFrac, yFade;
+		static thread_local std::vector<int32_t> yPerm;
+		yFrac.resize(size_t(size.y));
+		yFade.resize(size_t(size.y));
+		yPerm.resize(size_t(size.y));
+		for (int32_t y = 0; y < size.y; ++y) {
+			double fy = (offset.y + y) * scale.y + coordinate.y;
+			int32_t iy = Java::DoubleToInt32(fy);
+			if (fy < iy)
+				--iy;
+			yPerm[size_t(y)] = iy & 255;
+			fy -= iy;
+			yFrac[size_t(y)] = fy;
+			yFade[size_t(y)] = fade(fy);
+		}
+
 		for (int32_t x = 0; x < size.x; ++x) {
 			double fx = (offset.x + x) * scale.x + coordinate.x;
 			int32_t ix = Java::DoubleToInt32(fx);
@@ -183,13 +210,9 @@ void NoisePerlin::GenerateNoise(std::vector<double>& noiseField, Vec3 offset, In
 				double w = fade(fz);
 
 				for (int32_t y = 0; y < size.y; ++y) {
-					double fy = (offset.y + y) * scale.y + coordinate.y;
-					int32_t iy = Java::DoubleToInt32(fy);
-					if (fy < iy)
-						--iy;
-					int32_t py = iy & 255;
-					fy -= iy;
-					double v = fade(fy);
+					double fy = yFrac[size_t(y)];
+					int32_t py = yPerm[size_t(y)];
+					double v = yFade[size_t(y)];
 
 					if (y == 0 || py != lastPermY) {
 						lastPermY = py;

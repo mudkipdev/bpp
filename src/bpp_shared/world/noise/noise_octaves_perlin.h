@@ -37,18 +37,9 @@ inline NoiseOctavesPerlin::NoiseOctavesPerlin(int32_t poctaves) : octaves(poctav
 }
 
 /**
- * @brief Construct a new octave set
- *
- * All octaves are always constructed so the seeded permutation tables and the
- * state of the passed random number generator match vanilla exactly. When
- * effectiveOctaves is set, only that many of the highest-amplitude octaves are
- * sampled at generation time; the skipped octaves are the highest-frequency
- * ones, whose combined contribution is below one part in 2^effectiveOctaves
- * of the dominant octave (sub-block jitter on terrain noise).
- *
- * @param rand The random number generator that should be used
- * @param poctaves The number of octaves to construct
- * @param effectiveOctaves How many octaves to actually sample, 0 samples all of them
+ * @brief Construct a new octave set, sampling only the effectiveOctaves highest-amplitude
+ *        octaves at generation time (0 samples all). All octaves are still constructed
+ *        so the permutation tables and rand state match vanilla exactly.
  */
 inline NoiseOctavesPerlin::NoiseOctavesPerlin(Java::Random& rand, int32_t poctaves, int32_t effectiveOctaves)
     : octaves(poctaves) {
