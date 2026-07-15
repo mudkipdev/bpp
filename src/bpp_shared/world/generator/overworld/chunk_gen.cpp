@@ -10,7 +10,8 @@
 #include "generator/overworld/tree_gen.h"
 #include <algorithm>
 
-static constexpr int32_t EFFECTIVE_TERRAIN_OCTAVES = 8;
+static constexpr int32_t EFFECTIVE_TERRAIN_OCTAVES = 6;
+static constexpr int32_t EFFECTIVE_SELECTOR_OCTAVES = 6;
 static constexpr double DENSITY_EPSILON = 1.0e-9;
 
 /**
@@ -35,7 +36,7 @@ OverworldGenerator::OverworldGenerator(int64_t p_seed) : Generator(p_seed), m_bi
 	int32_t effectiveOctaves = fastGeneration ? EFFECTIVE_TERRAIN_OCTAVES : 0;
 	m_lowNoiseGen = NoiseOctavesPerlin(m_rand, 16, effectiveOctaves);
 	m_highNoiseGen = NoiseOctavesPerlin(m_rand, 16, effectiveOctaves);
-	m_selectorNoiseGen = NoiseOctavesPerlin(m_rand, 8);
+	m_selectorNoiseGen = NoiseOctavesPerlin(m_rand, 8, fastGeneration ? EFFECTIVE_SELECTOR_OCTAVES : 0);
 	m_sandGravelNoiseGen = NoiseOctavesPerlin(m_rand, 4);
 	m_stoneNoiseGen = NoiseOctavesPerlin(m_rand, 4);
 	m_continentalnessNoiseGen = NoiseOctavesPerlin(m_rand, 10);
@@ -124,7 +125,8 @@ void OverworldGenerator::ReplaceBlocksForBiome(Chunk& chunk) {
 				// This is intentional, to match b1.7.3 behavior!
 				Int3 bpos{ z, y, x };
 				// Place Bedrock at bottom with some randomness
-				if (y <= 0 + m_rand.nextInt(5)) {
+				bool bedrock = fastGeneration ? (y < 5 && y <= m_rand.nextInt(5)) : (y <= 0 + m_rand.nextInt(5));
+				if (bedrock) {
 					chunk.setBlock(bpos, BLOCK_BEDROCK);
 					continue;
 				}

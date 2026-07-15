@@ -6,6 +6,7 @@
 */
 
 #include "cave_gen.h"
+#include "generator/generator.h"
 #include "java_math.h"
 
 /**
@@ -89,6 +90,16 @@ void CaveGenerator::CarveCave(Chunk& chunk, Vec3 offset, float tunnelRadius, flo
 	int32_t branchPoint = rand2.nextInt(tunnelLength / 2) + tunnelLength / 4;
 
 	bool tunnel_steepness = rand2.nextInt(6) == 0;
+
+	if (Generator::fastGeneration) {
+		double dx = offset.x - chunkCenterX;
+		double dz = offset.z - chunkCenterZ;
+		double remaining = double(tunnelLength - tunnelStep);
+		double limit = double(tunnelRadius + 2.0f + 16.0f);
+		if ((dx * dx + dz * dz - remaining * remaining) > (limit * limit))
+			return;
+	}
+
 	for (; tunnelStep < tunnelLength; ++tunnelStep) {
 		double radius_xz = 1.5 + double(MathHelper::sin(float(tunnelStep) * JavaMath::PI_FLOAT / float(tunnelLength)) *
 		                                tunnelRadius * 1.0f);
