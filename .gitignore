@@ -53,3 +53,5 @@ CMakeSettings.json
 *.lock
 src/bpp_shared/version.h
 *.dat_old
+/target
+!Cargo.lock

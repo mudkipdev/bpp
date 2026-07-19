@@ -1,11 +1,11 @@
-# BetrockPlusPlus/Betrock++
+# Betrock.rs 🚀🚀🚀
 ![C++23](https://img.shields.io/badge/Language-C%2B%2B23-5E96CF)
 ![Issues](https://img.shields.io/github/issues/OfficialPixelBrush/BetrockPlusPlus)
 ![Pull requests](https://img.shields.io/github/issues-pr/OfficialPixelBrush/BetrockPlusPlus)
 
-A from-scratch rewrite/combination of Beta++/Betrock and BetrockServer to combine their bests parts cleanly.
+A blazingly fast 🚀 from-scratch rewrite/combination of Beta++/Betrock and BetrockServer to combine their bests parts cleanly. 🚀
 
-# Goals
+# Goals 🚀
 A full, from-scratch reimplementation of Minecraft Beta 1.7.3.
 
 1. Ideally BPP should be capable of acting as both a Client and Server
@@ -20,7 +20,7 @@ This is another project that's part of/worked on by the OpenBeta Community. We h
 ## Contributing
 Please read the [CONTRIBUTING](./CONTRIBUTING.md) page.
 
-## How to use
+## How to use 🚀
 ### Clone the Repository
 Simply clone the respository with `git`.
 ```bash
@@ -84,7 +84,7 @@ sudo xbps-install -S base-devel git cmake clang libdeflate-devel glfw-devel glm 
 sudo emerge dev-vcs/git dev-util/cmake sys-devel/clang sys-devel/gcc sys-devel/make dev-libs/libdeflate media-libs/glfw media-libs/glm media-libs/openal media-libs/libsdl3 media-libs/mesa
 ```
 
-### Building
+### Building 🚀🚀
 
 #### Option #1: Command-line
 First you prepare and enter the build directory.

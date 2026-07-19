@@ -1,0 +1,10 @@
+[package]
+name = "bpp_client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bpp_shared = { path = "../bpp_shared" }
+glfw = "0.59"
+gl = "0.14"
